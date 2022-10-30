@@ -1,0 +1,28 @@
+.each-slide > div {
+    display: flex;
+    justify-content: center;
+    background-size: contain;
+    background-position: center;
+    height: 500px;
+}
+
+@media (max-width: 500px) {
+    .each-slide > div {
+        display: flex;
+        justify-content: center;
+        background-size: contain;
+        background-position: center;
+        height: 300px;
+    }
+}
+
+
+@media (max-width: 350px) {
+    .each-slide > div {
+        display: flex;
+        justify-content: center;
+        background-size: contain;
+        background-position: center;
+        height: 230px;
+    }
+}
