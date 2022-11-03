@@ -3,15 +3,25 @@ import { ShopLayout } from '../components/layouts';
 import {Typography} from '@mui/material';
 import { ProductList } from '../components/products';
 import { initialData } from '../database/products';
+import { useProducts } from '../hooks';
+import { FullScreenLoading } from '../components/ui';
 
-const Home: NextPage = () => {
+const HomePage: NextPage = () => {
+
+  const {products, isLoading, isError} = useProducts('/products');
+
   return (
-    <ShopLayout title='Teslo-shop' pageDescription=''>
-      <Typography>Tienda</Typography>
+    <ShopLayout title='Teslo-shop' pageDescription='Inicio'>
+      <Typography variant="h1" component="h1" fontSize={30}>Tienda</Typography>
       <Typography>Todos los productos</Typography>
-      <ProductList products={initialData.products as any} />
+
+      {
+        isLoading 
+          ? <FullScreenLoading />
+          : <ProductList products={products} />
+      }
     </ShopLayout>
   )
 }
 
-export default Home
+export default HomePage;
