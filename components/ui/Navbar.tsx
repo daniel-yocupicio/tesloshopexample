@@ -49,12 +49,8 @@ export const Navbar = () => {
                     </NextLink>
                 </Box>
 
-
                 <Box flex={ 1 } />
                 
-                
-
-                {/* Pantallas pantallas grandes */}
                 {
                     isSearchVisible 
                         ? (
@@ -90,8 +86,6 @@ export const Navbar = () => {
                     )
                 }
 
-
-                {/* Pantallas pequeñas */}
                 <IconButton
                     sx={{ display: { xs: 'flex', sm: 'none' } }}
                     onClick={ toggleSideMenu }
@@ -108,7 +102,6 @@ export const Navbar = () => {
                         </IconButton>
                     </Link>
                 </NextLink>
-
 
                 <Button onClick={ toggleSideMenu }>
                     Menú
