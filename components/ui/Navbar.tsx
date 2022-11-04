@@ -21,81 +21,80 @@ export const Navbar = () => {
     return (
         <AppBar>
             <Toolbar>
-                <NextLink href="/" passHref>
-                    <Link display="flex" alignItems="center" justifyItems="center">
-                        <Typography variant="h6">
-                            Teslo |
-                        </Typography>
-                        <Typography
-                            sx={{ ml: 0.5 }}
-                        >
-                            shop
-                        </Typography>
-                    </Link>
+                <NextLink href='/' passHref>
+                    <Link display='flex' alignItems='center'>
+                        <Typography variant='h6'>Teslo |</Typography>
+                        <Typography sx={{ ml: 0.5 }}>Shop</Typography>
+                    </Link>  
                 </NextLink>
 
-                <Box sx={{ flex: 1 }} />
+                <Box flex={ 1 } />
 
-                <Box
-                    className="fadeIn"
-                    sx={{ display: isSearchVisible ? 'none' : { xs: 'none', sm: 'block' } }}
-                >
-                    <NextLink href="/category/men" passHref>
+                <Box sx={{ display: isSearchVisible ? 'none' : { xs: 'none', sm: 'block' } }}
+                    className="fadeIn">
+                    <NextLink href='/category/men' passHref>
                         <Link>
-                            <Button color={asPath === '/category/men' ? 'primary' : 'info'}>Hombres</Button>
+                            <Button color={ asPath === '/category/men' ? 'primary':'info'}>Hombres</Button>
                         </Link>
                     </NextLink>
-
-                    <NextLink href="/category/women" passHref>
+                    <NextLink href='/category/women' passHref>
                         <Link>
-                            <Button color={asPath === '/category/women' ? 'primary' : 'info'}>Mujeres</Button>
+                            <Button color={ asPath === '/category/women' ? 'primary':'info'}>Mujeres</Button>
                         </Link>
                     </NextLink>
-
-                    <NextLink href="/category/kid" passHref>
+                    <NextLink href='/category/kid' passHref>
                         <Link>
-                            <Button color={asPath === '/category/kid' ? 'primary' : 'info'}>Niños</Button>
+                            <Button color={ asPath === '/category/kid' ? 'primary':'info'}>Niños</Button>
                         </Link>
                     </NextLink>
                 </Box>
 
-                <Box sx={{ flex: 1 }} />
 
+                <Box flex={ 1 } />
+                
+                
+
+                {/* Pantallas pantallas grandes */}
                 {
-                    isSearchVisible
-                        ?
-                        (<Input
-                            autoFocus
-                            value={searchTerm}
+                    isSearchVisible 
+                        ? (
+                            <Input
+                                sx={{ display: { xs: 'none', sm: 'flex' } }}
+                                className='fadeIn'
+                                autoFocus
+                                value={ searchTerm }
+                                onChange={ (e) => setSearchTerm( e.target.value ) }
+                                onKeyPress={ (e) => e.key === 'Enter' ? onSearchTerm() : null }
+                                type='text'
+                                placeholder="Buscar..."
+                                endAdornment={
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={ () => setIsSearchVisible(false) }
+                                        >
+                                            <ClearOutlined />
+                                        </IconButton>
+                                    </InputAdornment>
+                                }
+                            />
+                        )
+                    : 
+                    (
+                        <IconButton 
+                            onClick={ () => setIsSearchVisible(true) }
                             className="fadeIn"
-                            sx={{ display: { xs: 'none', sm: 'block' } }}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' ? onSearchTerm() : null}
-                            type='text'
-                            placeholder="Buscar..."
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        onClick={() => setIsSearchVisible(false)}
-                                    >
-                                        <ClearOutlined />
-                                    </IconButton>
-                                </InputAdornment>
-                            }
-                        />)
-                        :
-                        (<IconButton
-                            sx={{ display: { xs: 'none', sm: 'block' } }}
-                            onClick={() => setIsSearchVisible(true)}
-                            className="fadeIn"
+                            sx={{ display: { xs: 'none', sm: 'flex' } }}
                         >
                             <SearchOutlined />
-                        </IconButton>)
+                        </IconButton>
+                    )
                 }
 
+
+                {/* Pantallas pequeñas */}
                 <IconButton
-                    sx={{ display: { xs: 'block', sm: 'none' } }}
-                    onClick={toggleSideMenu}
+                    sx={{ display: { xs: 'flex', sm: 'none' } }}
+                    onClick={ toggleSideMenu }
                 >
                     <SearchOutlined />
                 </IconButton>
@@ -103,14 +102,17 @@ export const Navbar = () => {
                 <NextLink href="/cart" passHref>
                     <Link>
                         <IconButton>
-                            <Badge badgeContent={2} color="secondary">
+                            <Badge badgeContent={ 2 } color="secondary">
                                 <ShoppingCartOutlined />
                             </Badge>
                         </IconButton>
                     </Link>
                 </NextLink>
 
-                <Button onClick={() => toggleSideMenu()}>Menú</Button>
+
+                <Button onClick={ toggleSideMenu }>
+                    Menú
+                </Button>
 
             </Toolbar>
         </AppBar>
