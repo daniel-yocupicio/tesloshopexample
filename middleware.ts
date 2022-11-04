@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { dbProducts } from "./database";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     return NextResponse.next();
 }
 

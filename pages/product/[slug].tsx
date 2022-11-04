@@ -1,13 +1,20 @@
+import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next'
+import { GetStaticPaths } from 'next'
+import { NextPage } from "next";
 import { Box, Button, Chip, Grid, Typography } from "@mui/material";
 import { ShopLayout } from "../../components/layouts";
 import { ProductSlideShop } from "../../components/products";
 import { ItemCounter } from "../../components/ui";
-import { initialData } from "../../database/products";
 import { SizeSelector } from '../../components/products/SizeSelector';
+import { IProduct } from "../../interfaces";
+import { dbProducts } from "../../database";
 
-const product = initialData.products[0];
+interface Props {
+    product: IProduct;
+}
 
-const ProductPage = () => {
+const ProductPage: NextPage<Props> = ({product}) => {
     return ( 
         <ShopLayout title={product.title} pageDescription={product.description}>
             <Grid container spacing={3}>
@@ -47,5 +54,68 @@ const ProductPage = () => {
         </ShopLayout>
      );
 }
- 
+
+//  SSR - esta función realiza una consulta antes de renderizar la vista para mostrar los datos,
+//        no es una una manera estatica por lo tanto se ejecuta n veces.
+//
+// export const getServerSideProps: GetServerSideProps = async (ctx) => {
+//     const product = await dbProducts.getProductBySlug(`${ctx!.params!.slug }`); 
+
+//     if(!product) {
+//         return {
+//             redirect: {
+//                 destination: '/',
+//                 permanent: false,
+//             }
+//         }
+//     }
+
+//     return {
+//         props: {
+//           product      
+//         }
+//     }
+// }
+
+export const getStaticPaths: GetStaticPaths = async (ctx) => {
+    const productSlugs = await dbProducts.getAllProductSlugs();
+
+    return {
+        paths: productSlugs.map(obj => ({
+            params: {
+                slug: obj.slug
+            }
+        })) ,
+        // paths: [
+        //     {
+        //         params: {
+                    
+        //         }
+        //     }
+        // ],
+        fallback: "blocking"
+    }
+}
+
+export const getStaticProps: GetStaticProps = async ({params}) => {
+    const { slug = '' } = params as {slug: string}
+    const product = await dbProducts.getProductBySlug(slug);
+
+    if(!product) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            }
+        }
+    }
+
+    return {
+        props: {
+            product
+        },
+        revalidate: 240000,
+    }
+}
+
 export default ProductPage;
