@@ -1,20 +1,69 @@
-import { GetServerSideProps } from 'next';
-import { GetStaticProps } from 'next'
-import { GetStaticPaths } from 'next'
-import { NextPage } from "next";
+import {useState, useContext} from 'react';
+import { GetStaticProps, GetStaticPaths,  NextPage } from 'next'
 import { Box, Button, Chip, Grid, Typography } from "@mui/material";
 import { ShopLayout } from "../../components/layouts";
 import { ProductSlideShop } from "../../components/products";
 import { ItemCounter } from "../../components/ui";
 import { SizeSelector } from '../../components/products/SizeSelector';
-import { IProduct } from "../../interfaces";
+import { ICartProduct, IProduct, ISize } from "../../interfaces";
 import { dbProducts } from "../../database";
+import { IOperation } from '../../interfaces';
+import { CartContext } from '../../context/cart/CartContext';
 
 interface Props {
     product: IProduct;
 }
 
 const ProductPage: NextPage<Props> = ({product}) => {
+    const {addProductToCart, cart} = useContext(CartContext);
+    const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
+        _id: product._id,
+        image: product.images[0],
+        price: product.price,
+        size: undefined,
+        slug: product.slug,
+        title: product.title,
+        gender: product.gender,
+        quantity: 1,
+    });
+
+    const selectSize = (size: ISize) => {
+        setTempCartProduct({...tempCartProduct, size: size})
+    }
+
+    const onNewQuantity = (operation: IOperation) => {
+        if (operation === "ADD") {
+            tempCartProduct.quantity < product.inStock
+                && setTempCartProduct({...tempCartProduct, quantity: tempCartProduct.quantity + 1})
+        } else {
+            tempCartProduct.quantity > 1 
+                && setTempCartProduct({...tempCartProduct, quantity: tempCartProduct.quantity - 1 })
+        }
+    }
+
+    const onAddProductToCart = () => {        
+        if(tempCartProduct.quantity < 1 || tempCartProduct.size === undefined || tempCartProduct.quantity > product.inStock) {
+            return;
+        }   
+
+        if ( product.inStock - tempCartProduct.quantity < 1) {
+            return;
+        }
+
+        addProductToCart(tempCartProduct);
+    }
+
+    /**
+        Se puede acceder al valor desde la función del useState como un callback
+
+        const selectSize = (size: ISize) => {
+            setTempCartProduct(currentProduct => {
+                ...currentProduct,
+                size
+            })
+        }
+     */
+
     return ( 
         <ShopLayout title={product.title} pageDescription={product.description}>
             <Grid container spacing={3}>
@@ -31,17 +80,35 @@ const ProductPage: NextPage<Props> = ({product}) => {
 
                         <Box display="flex" sx={{my:2}} alignItems="center">
                             <Typography variant="subtitle2">Cantidad:</Typography>
-                            <ItemCounter />
+                            <ItemCounter 
+                                quantity={tempCartProduct.quantity}
+                                onNewQuantity={onNewQuantity}
+                                maxQuantity={product.inStock}
+                            />
                         </Box>
 
                         <Box display="flex" sx={{my:2}}>
                             <Typography variant="subtitle2" marginTop={0.5}>Tamaño:</Typography>
-                            <SizeSelector selectedSize={product.sizes[0]} sizes={product.sizes} />
+                            <SizeSelector 
+                                selectedSize={tempCartProduct.size} 
+                                sizes={product.sizes} 
+                                onSelectedSize={selectSize}
+                            />
                         </Box>
 
-                        <Button color="secondary" className="circular-btn">Agregar al carrito</Button>
-
-                        {/* <Chip label="No hay disponibles" color="error" variant="outlined" /> */}
+                        {
+                            product.inStock > 0
+                            ? 
+                                <Button 
+                                    color={tempCartProduct.size ? "secondary" : "error"} 
+                                    className="circular-btn"
+                                    disabled={tempCartProduct.size ? false : true}
+                                    onClick={onAddProductToCart}
+                                >
+                                    {tempCartProduct.size ? "Agregar al carrito" : "Seleccione una talla"} 
+                                </Button>
+                            : <Chip label="No hay disponibles" color="error" variant="outlined" />
+                        }
 
                         <Box sx={{mt:3}}>
                             <Typography variant="subtitle2">Descripción</Typography>
