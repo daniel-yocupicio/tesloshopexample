@@ -2,7 +2,6 @@ import type { NextPage } from 'next';
 import { ShopLayout } from '../../components/layouts';
 import {Typography} from '@mui/material';
 import { ProductList } from '../../components/products';
-import { initialData } from '../../database/products';
 import { FullScreenLoading } from '../../components/ui';
 import { useProducts } from '../../hooks';
 
