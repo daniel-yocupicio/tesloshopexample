@@ -2,13 +2,22 @@ import React, { useReducer, FC, useEffect } from 'react';
 import Cookie from 'js-cookie';
 import { ICartProduct } from '../../interfaces';
 import {CartContext, cartReducer} from './';
+import { IOperation } from '../../interfaces/cart';
 
 export interface CartState {
     cart: ICartProduct[];
+    numberOfItems: number;
+    subTotal: number;
+    tax: number;
+    total: number;
 };
 
 const CART_INITIAL_STATE: CartState = {
-    cart: []
+    cart: [],
+    numberOfItems: 0,
+    subTotal: 0,
+    tax: 0,
+    total: 0,
 };
 
 export const CartProvider: FC<{children: React.ReactNode}> = ({children}) => {
@@ -21,10 +30,30 @@ export const CartProvider: FC<{children: React.ReactNode}> = ({children}) => {
         } catch (e) {
             dispatch({type: '[Cart] - LoadCart from cookies | storage', payload: []});
         }
-    })
+    }, [])
 
     useEffect(() => {
         Cookie.set('cart', JSON.stringify(state.cart))
+    }, [state.cart]);
+
+    useEffect(() => {
+        //reduce es una función de arrays que tiene dos parametros callback, uno es el valor previo y el otro es 
+        //el valor actual, entonces se le pasa lo que tiene la función y despues el valor inicial que es 0
+        //entonces inicia en 0 y el prev = 0 y el current = al valor actual y realiza la suma
+        // [actual] + 0 = nuevo valor.
+        const numberOfItems = state.cart.reduce((prev, current) => current.quantity + prev, 0);
+        const subTotal = state.cart.reduce((prev, current) => (current.quantity * current.price) + prev ,0);
+        //Esta constante es de ejemplo pero no deberia ser constante porque puede variar.
+        const taxtRate = Number(process.env.NEXT_PUBLIC_TAX_RATE || 0);
+
+        const orderSummary = {
+            numberOfItems, 
+            subTotal,
+            tax: subTotal * taxtRate,
+            total: subTotal * (taxtRate + 1)
+        }
+
+        dispatch({type: '[Cart] - Update order summary', payload: orderSummary});
     }, [state.cart]);
 
     const addProductToCart = (product: ICartProduct) => {
@@ -35,7 +64,7 @@ export const CartProvider: FC<{children: React.ReactNode}> = ({children}) => {
             return dispatch({type: '[Cart] - Add product', payload: product});
         } else {
             const quantity = oldProduct.quantity + product.quantity;
-            return dispatch({type: '[Cart] - Update product', payload: {...product, quantity}})
+            return dispatch({type: '[Cart] - Update product in cart', payload: {...product, quantity}})
         }
 
         // const productInCart = state.cart.some( p => p._id === product._id );
@@ -57,11 +86,21 @@ export const CartProvider: FC<{children: React.ReactNode}> = ({children}) => {
         // dispatch({ type: '[Cart] - Update products in cart', payload: updatedProducts });
     }
 
+    const updateCartQuantity = (product: ICartProduct) => {
+        dispatch({type: '[Cart] - Change product quantity', payload: product});
+    }
+
+    const removeCartProduct = (product: ICartProduct) => {
+        dispatch({type: '[Cart] - Remove product in car', payload: product})
+    }
+
     return (
         <CartContext.Provider
             value={{
                 ...state,
                 addProductToCart,
+                updateCartQuantity,
+                removeCartProduct,
             }}
         >
             {children}
