@@ -9,9 +9,6 @@ const KidPage: NextPage = () => {
 
   const {products, isLoading, isError} = useProducts('/products?gender=kid');
 
-  console.log(products);
-  
-
   return (
     <ShopLayout title='Teslo-shop - productos para niños' pageDescription='Todos los productos para niños'>
       <Typography variant="h1" component="h1" fontSize={30}>Tienda</Typography>

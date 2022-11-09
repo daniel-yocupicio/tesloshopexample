@@ -62,5 +62,42 @@ const AdressPage = () => {
         </ShopLayout>
      );
 }
- 
+
+//  Verificar si el token es correcto, esta es una manera de checar si el token de 
+//  las cookies es correcto y si no se va a login
+//
+// import { GetServerSideProps } from 'next'
+// import { jwt } from "../../utils";
+
+// export const getServerSideProps: GetServerSideProps = async ({req}) => {
+
+//     const {token = ''} = req.cookies;
+
+//     let userId = '';
+//     let isValidToken = false;
+
+//     try {
+//         userId = await jwt.isValidToken(token);
+//         isValidToken = true;
+//     } catch(e) {
+//         isValidToken = false;
+//     }
+
+//     if(!isValidToken) {
+//         return {
+//             redirect: {
+//                 destination: '/auth/login?p=/checkout/address',
+//                 permanent: false,
+//             }
+//         }
+//     }
+
+//     return {
+//         props: {
+            
+//         }
+//     }
+// }
+
+
 export default AdressPage;

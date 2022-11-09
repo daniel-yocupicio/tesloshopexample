@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 
 export const SideMenu = () => {
     const {isMenuOpen,toggleSideMenu} = useContext(UIContext);
-    const {push} = useRouter();
+    const {push, asPath} = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
     const {user, isLoggedIn, logout} = useContext(AuthContext);
 
@@ -118,7 +118,10 @@ export const SideMenu = () => {
                                 </ListItemIcon>
                                 <ListItemText primary={'Salir'} />
                             </ListItem>
-                        :   <ListItem button>
+                        :   <ListItem 
+                                button
+                                onClick={() => navigate(`/auth/login?p=${asPath}`)}
+                            >
                                 <ListItemIcon>
                                     <VpnKeyOutlined/>
                                 </ListItemIcon>

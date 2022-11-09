@@ -9,6 +9,7 @@ import { ICartProduct, IProduct, ISize } from "../../interfaces";
 import { dbProducts } from "../../database";
 import { IOperation } from '../../interfaces';
 import { CartContext } from '../../context/cart/CartContext';
+import { useRouter } from 'next/router';
 
 interface Props {
     product: IProduct;
@@ -16,6 +17,7 @@ interface Props {
 
 const ProductPage: NextPage<Props> = ({product}) => {
     const {addProductToCart, cart} = useContext(CartContext);
+    const router = useRouter();
     const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
         _id: product._id,
         image: product.images[0],
@@ -51,6 +53,7 @@ const ProductPage: NextPage<Props> = ({product}) => {
         }
 
         addProductToCart(tempCartProduct);
+        router.push('/cart');
     }
 
     /**

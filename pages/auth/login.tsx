@@ -31,8 +31,8 @@ const LoginPage = () => {
             setTimeout(() => setShowError(false), 3000);
             return;
         }
-
-        router.replace('/');
+        const destination = router.query.p?.toString() || '/';
+        router.replace(destination);
     }
 
     return ( 
@@ -103,7 +103,10 @@ const LoginPage = () => {
 
                         <Grid item xs={12}>
                             <Box sx={{textAlign: 'center'}}>
-                                <NextLink href="/auth/register" passHref>
+                                <NextLink 
+                                    href={router.query.p ? `/auth/login?p=${router.query.p}` : '/auth/login'} 
+                                    passHref
+                                >
                                     <Link underline="always" sx={{alignSelf: 'center'}}>
                                         ¿No tienes cuenta?
                                     </Link>
