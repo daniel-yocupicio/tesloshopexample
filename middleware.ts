@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-// import { jwt } from "./utils";
+import * as jose from 'jose';
 
 export async function middleware(request: NextRequest) {
 
@@ -34,6 +34,30 @@ export async function middleware(request: NextRequest) {
 //             );
 //         }
     // }
+
+    if (request.nextUrl.pathname.startsWith("/checkout")) {
+        const token = request.cookies.get("token");
+     
+        try {
+          await jose.jwtVerify(
+            token || "",
+            new TextEncoder().encode(process.env.JWT_SECRET_SEED || "")
+          );
+          
+          return NextResponse.next();
+        } catch (error) {
+          //console.error(`JWT Invalid or not signed in`, { error });
+          const { protocol, host, pathname } = request.nextUrl;
+          
+         // console.log(`${protocol}//${host}/auth/login?p=${pathname.toString()}`);
+          
+
+          return NextResponse.redirect(
+            //`${protocol}//${host}/auth/login?p=${pathname.toString()}`
+            new URL("/auth/login?p=" + pathname, request.url)
+          );
+        }
+      }
 
     return NextResponse.next();
 }
