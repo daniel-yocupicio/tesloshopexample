@@ -1,14 +1,17 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+import '../styles/globals.css';
+import type { AppProps } from 'next/app';
 import {ThemeProvider, CssBaseline} from '@mui/material';
 import {SWRConfig} from 'swr';
+import {SessionProvider} from 'next-auth/react';
+import { Session } from "next-auth";
 import { lightTheme } from '../themes';
 import { UIProvider, CartProvider, AuthProvider } from '../context';
-import {SessionProvider} from 'next-auth/react';
 
-function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps }: AppProps<{
+  session: Session;
+}>) {
   return (
-    <SessionProvider>
+    <SessionProvider session={pageProps.session} refetchInterval={0}>
       <SWRConfig
             value={{
               fetcher: (resource, init) => fetch(resource, init).then(res => res.json())

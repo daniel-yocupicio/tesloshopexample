@@ -4,7 +4,7 @@ import { db } from "./"
 
 export const checkUserEmailPassword = async (email: string, password: string) => {
 
-    console.log(1);
+    console.log(2312312312312312312);
     
     await db.connect();
     console.log(2);
