@@ -106,8 +106,6 @@ export const AuthProvider: FC<{children: React.ReactNode}> = ({children}) => {
         Cookie.remove('country',);
         Cookie.remove('phone',);
         signOut();
-        //router.reload();
-        //Cookie.remove('token');
     }
 
     return (
