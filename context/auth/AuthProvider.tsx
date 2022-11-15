@@ -5,7 +5,7 @@ import { tesloApi } from '../../api';
 import Cookie from 'js-cookie';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 
 export interface AuthState {
     isLoggedIn: boolean;
@@ -24,7 +24,8 @@ export const AuthProvider: FC<{children: React.ReactNode}> = ({children}) => {
 
     useEffect(()=>{
         if(status === 'authenticated') {
-            //dispatch({type: '[Auth] - Login', payload: data?.user as IUser })
+            console.log(data);
+            dispatch({type: '[Auth] - Login', payload: data?.user as IUser })
         }
     },[status, data])
 
@@ -32,22 +33,22 @@ export const AuthProvider: FC<{children: React.ReactNode}> = ({children}) => {
     //     checkToken();
     // },[])
 
-    const checkToken = async () => {
+    // const checkToken = async () => {
 
-        if(!Cookie.get('token')) {
-            return;
-        }
+    //     if(!Cookie.get('token')) {
+    //         return;
+    //     }
 
-        try {
-            const {data} = await tesloApi.get('/user/validatetoken');
-            const {token, user} = data;
+    //     try {
+    //         const {data} = await tesloApi.get('/user/validatetoken');
+    //         const {token, user} = data;
 
-            Cookie.set('token', token)
-            dispatch({type: '[Auth] - Login', payload: user});
-        } catch(e){
-            Cookie.remove('token');
-        }
-    }
+    //         Cookie.set('token', token)
+    //         dispatch({type: '[Auth] - Login', payload: user});
+    //     } catch(e){
+    //         Cookie.remove('token');
+    //     }
+    // }
 
     const loginUser = async (email: string, password: string): Promise<boolean> => {
         try {
@@ -95,7 +96,6 @@ export const AuthProvider: FC<{children: React.ReactNode}> = ({children}) => {
     }
 
     const logout = () => {
-        Cookie.remove('token');
         Cookie.remove('cart');
         Cookie.remove('firstName');
         Cookie.remove('lastName');
@@ -105,7 +105,9 @@ export const AuthProvider: FC<{children: React.ReactNode}> = ({children}) => {
         Cookie.remove('city',);
         Cookie.remove('country',);
         Cookie.remove('phone',);
-        router.reload();
+        signOut();
+        //router.reload();
+        //Cookie.remove('token');
     }
 
     return (

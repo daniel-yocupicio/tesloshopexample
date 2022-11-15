@@ -28,7 +28,12 @@ export const authOptions = {
               return null;
           }
           
-          return user;
+          return {
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            _id: user._id,
+          };
         } catch(error){
           console.log(error);
           return null;
@@ -43,34 +48,32 @@ export const authOptions = {
   ],
 
   callbacks: {
-    // async jwt({token, account, user}) {
-    //   console.log(1);
+    async jwt({token, account, user}) {
+     
+      if(account) {
+        token.accessToken = account.access_token;
+
+        switch(account.type) {
+          case 'oauth':
+            // 
+          break;
+
+          case 'credentials':
+            token.user = user;
+          break;
+        }
+
+      }
+
+      return token;
+    },
+
+    async session({session, token, user}){
+      session.accessToken = token.accessToken;
+      session.user = token.user;
       
-    //   if(account) {
-    //     token.accessToken = account.access_token;
-
-    //     switch(account.type) {
-    //       case 'oauth':
-
-    //       break;
-
-    //       case 'credentials':
-    //         token.user = user;
-    //       break;
-    //     }
-
-    //   }
-
-    //   return token;
-    // },
-
-    // async session({session, token, user}){
-    //   console.log(2);
-    //   session.accessToken = token.accessToken;
-    //   session.user = token.user;
-      
-    //   return session;
-    // }
+      return session;
+    }
   }
 }
 export default NextAuth(authOptions)
