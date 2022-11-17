@@ -1,13 +1,13 @@
-import { useContext, useState } from "react";
+import { useEffect, useState } from "react";
+import { GetServerSideProps } from 'next'
 import NextLink from "next/link";
-import { Box, Button, Grid, TextField, Typography, Link, Chip } from "@mui/material";
+import { Box, Button, Grid, TextField, Typography, Link, Chip, Divider } from "@mui/material";
 import { AuthLayout } from "../../components/layouts";
 import { useForm } from "react-hook-form";
 import { validations } from "../../utils";
-import tesloApi from '../../api/tesloAPI';
 import { ErrorOutline } from "@mui/icons-material";
-import { AuthContext } from "../../context";
 import { useRouter } from "next/router";
+import { getSession, signIn, getProviders } from "next-auth/react";
 
 type FormData = {
     email: string,
@@ -17,22 +17,20 @@ type FormData = {
 const LoginPage = () => {
 
     const router = useRouter();
-    const {loginUser} = useContext(AuthContext);
     const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>();
     const [showError, setShowError] = useState(false);
+    const [providers, setProviders] = useState<any>({});
+
+    useEffect(()=>{
+        getProviders().then(prov => {
+            setProviders(prov);
+        })
+    },[])
 
     const onLoginUser = async ({email, password}: FormData) => {
         setShowError(false)
 
-        const isValidLogin = await loginUser(email, password);
-
-        if(!isValidLogin) {
-            setShowError(true);
-            setTimeout(() => setShowError(false), 3000);
-            return;
-        }
-        const destination = router.query.p?.toString() || '/';
-        router.replace(destination);
+        await signIn('credentials', {email, password});
     }
 
     return ( 
@@ -61,9 +59,7 @@ const LoginPage = () => {
                                     fullWidth
                                     {...register('email',{ 
                                             required: 'Este campo es requerido',
-                                            // validate retorna un valor (val) => validations.isEmail(val)
-                                            // entonces al solo ser un valor solamente se pasa como se muestra 
-                                            // en la siguiente linea 
+                                            // (val) => validations.isEmail(val) or validations.isEmail
                                             validate: validations.isEmail
                                         })}
                                     error={!!errors.email}
@@ -101,7 +97,7 @@ const LoginPage = () => {
                             </Button>
                         </Grid>
 
-                        <Grid item xs={12}>
+                        <Grid item xs={12} display="flex" justifyContent={'end'}>
                             <Box sx={{textAlign: 'center'}}>
                                 <NextLink 
                                     href={router.query.p ? `/auth/login?p=${router.query.p}` : '/auth/login'} 
@@ -114,6 +110,33 @@ const LoginPage = () => {
                             </Box>
                         </Grid>
 
+                        <Grid item xs={12} display="flex" flexDirection={"column"} justifyContent={'end'}>
+                            <Divider sx={{width: '100%', mb: 2}} />
+                            {
+                                Object.values(providers).map((provider:any) => {
+
+                                    if(provider.id === 'credentials') {
+                                        return (
+                                            <div key={'credentials'}></div>
+                                        )
+                                    }
+
+                                    return(
+                                        <Button 
+                                            key={provider.id}
+                                            variant="outlined"
+                                            fullWidth
+                                            color="primary"
+                                            sx={{mb: 1}}
+                                            onClick={() => signIn(provider.id)}
+                                        >
+                                            {provider.name}
+                                        </Button>
+                                    )
+                                })
+                            }
+                        </Grid>
+
                     </Grid>
                 </Box>
             </form>
@@ -121,4 +144,23 @@ const LoginPage = () => {
      );
 }
  
+
+export const getServerSideProps: GetServerSideProps = async ({req, query}) => {
+    const {p = '/'} = query;
+    const session = await getSession({req});
+
+    if(session) {
+        return  {
+            redirect: {
+                destination: p.toString(),
+                permanent: true,
+            }
+        }
+    }
+
+    return {
+        props: {}
+    }
+}
+
 export default LoginPage;

@@ -1,13 +1,14 @@
 import NextLink from "next/link";
+import { GetServerSideProps } from 'next';
 import { Box, Button, Grid, TextField, Typography, Link, Chip } from '@mui/material';
 import { useForm } from "react-hook-form";
 import { AuthLayout } from "../../components/layouts";
 import { validations } from "../../utils";
 import { useState, useContext } from 'react';
-import { tesloApi } from "../../api";
 import { ErrorOutline } from "@mui/icons-material";
 import { AuthContext } from "../../context";
 import { useRouter } from "next/router";
+import { signIn, getSession } from "next-auth/react";
 
 type FormData = {
     name: string;
@@ -34,8 +35,7 @@ const RegisterPage = () => {
             return;
         }
           
-        const destination = router.query.p?.toString() || '/';
-        router.replace(destination);
+        await signIn('credentials',{email, password});
     }
 
     return ( 
@@ -81,9 +81,7 @@ const RegisterPage = () => {
                                     fullWidth
                                     {...register('email',{ 
                                         required: 'Este campo es requerido',
-                                        // validate retorna un valor (val) => validations.isEmail(val)
-                                        // entonces al solo ser un valor solamente se pasa como se muestra 
-                                        // en la siguiente linea 
+                                        // (val) => validations.isEmail(val) or validations.isEmail
                                         validate: validations.isEmail
                                     })}
                                     error={!!errors.email}
@@ -140,6 +138,24 @@ const RegisterPage = () => {
      );
 }
 
-// '/auth/register'+`?p=${router.query.p?.toString() || '/'}`
+export const getServerSideProps: GetServerSideProps = async ({req, query}) => {
+    const {p = '/'} = query;
+    const session = await getSession({req});
+
+    if(session) {
+        return  {
+            redirect: {
+                destination: p.toString(),
+                permanent: true,
+            }
+        }
+    }
+
+    return {
+        props: {
+            
+        }
+    }
+}
  
 export default RegisterPage;

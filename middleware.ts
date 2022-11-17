@@ -1,62 +1,41 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import * as jose from 'jose';
+import { getToken } from "next-auth/jwt";
+// import * as jose from 'jose';
 
+// Los middlewares a veces no funcionan con paquetes de nodejs.
 export async function middleware(request: NextRequest) {
 
-    // En la actualización hay cosas de nodeTest.js que no funcionan en la parte del cliente 
-    // entonces los middleware se ejecutan en la parte del cliente y al utilizar jwt
-    // sale un error al implementarlo, para esto hay dos soluciones que son: 
-
-    // 1- implementar la libreria jose [import * as jose from 'jose']
-    // 2- teniendo en cuenta que es en la parte del cliente se podria hacer una petición 
-    //    a un endpoint que te retorne si el jsonwebtoken es valido y con eso trabajar la redirección. 
-    //
-    // if(request.nextUrl.pathname.startsWith('/checkout/')) {
-    //     const token = request.cookies.get('token') || '';
-    //     let isValidToken = false;    
-
-    //     try {
-    //         await jwt.isValidToken(token);  <-- no sirve
-
-    //         await jose.jwtVerify(token || '', new TextEncoder().encode(process.env.JWT_SECRET));
-    //         isValidToken = true;
-
-    //         return NextResponse.next();   
-    //     } catch (e) {
-    //         isValidToken = false;
-    //     }
-
-//         if (!isValidToken) {
-//             const { pathname } = request.nextUrl;
-//             return NextResponse.redirect(
-//                 new URL(`/auth/login?redirect=${pathname}`, request.url)
-//             );
-//         }
-    // }
-
     if (request.nextUrl.pathname.startsWith("/checkout")) {
-        const token = request.cookies.get("token");
-     
-        try {
-          await jose.jwtVerify(
-            token || "",
-            new TextEncoder().encode(process.env.JWT_SECRET_SEED || "")
-          );
-          
-          return NextResponse.next();
-        } catch (error) {
-          //console.error(`JWT Invalid or not signed in`, { error });
-          const { protocol, host, pathname } = request.nextUrl;
-          
-         // console.log(`${protocol}//${host}/auth/login?p=${pathname.toString()}`);
-          
+        const session = await getToken({req: request, secret: process.env.NEXTAUTH_SECRET || ''});
+
+        if( !session ){
+          const { pathname } = request.nextUrl;
 
           return NextResponse.redirect(
-            //`${protocol}//${host}/auth/login?p=${pathname.toString()}`
             new URL("/auth/login?p=" + pathname, request.url)
           );
         }
+
+        return NextResponse.next();
+        // const token = request.cookies.get("token");
+     
+        // try {
+        //   await jose.jwtVerify(
+        //     token || "",
+        //     new TextEncoder().encode(process.env.JWT_SECRET_SEED || "")
+        //   );
+          
+        //   return NextResponse.next();
+        // } catch (error) {
+        //   //console.error(`JWT Invalid or not signed in`, { error });
+        //   const { protocol, host, pathname } = request.nextUrl;
+          
+        //  // console.log(`${protocol}//${host}/auth/login?p=${pathname.toString()}`);
+          
+
+
+        // }
       }
 
     return NextResponse.next();
