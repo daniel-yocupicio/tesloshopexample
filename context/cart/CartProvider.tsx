@@ -1,19 +1,9 @@
 import React, { useReducer, FC, useEffect } from 'react';
 import Cookie from 'js-cookie';
-import { ICartProduct } from '../../interfaces';
+import { ICartProduct, IOrder, IOrderItem, ShippingAddress } from '../../interfaces';
 import {CartContext, cartReducer} from './';
-//import { IOperation } from '../../interfaces/cart';
-
-export interface ShippingAddress {
-    firstName: string;
-    lastName : string;
-    address  : string;
-    address2?: string;
-    zip      : string;
-    city     : string;
-    country  : string;
-    phone    : string;
-}
+import tesloApi from '../../api/tesloAPI';
+import axios from 'axios';
 
 export interface CartState {
     isLoaded: boolean;
@@ -74,8 +64,8 @@ export const CartProvider: FC<{children: React.ReactNode}> = ({children}) => {
         //el valor actual, entonces se le pasa lo que tiene la función y despues el valor inicial que es 0
         //entonces inicia en 0 y el prev = 0 y el current = al valor actual y realiza la suma
         // [actual] + 0 = nuevo valor.
-        const numberOfItems = state.cart.reduce((prev, current) => current.quantity + prev, 0);
-        const subTotal = state.cart.reduce((prev, current) => (current.quantity * current.price) + prev ,0);
+        const numberOfItems = Number(state.cart.reduce((prev, current) => current.quantity + prev, 0));
+        const subTotal = Number(state.cart.reduce((prev, current) => (current.quantity * current.price) + prev ,0));
         //Esta constante es de ejemplo pero no deberia ser constante porque puede variar.
         const taxtRate = Number(process.env.NEXT_PUBLIC_TAX_RATE || 0);
 
@@ -127,6 +117,53 @@ export const CartProvider: FC<{children: React.ReactNode}> = ({children}) => {
         dispatch({type: '[Cart] - Remove product in car', payload: product})
     }
 
+    const createOrder = async (): Promise<{hasError: boolean; message?: string}> => {
+
+        if(!state.shippingAddress) {
+            throw new Error('No hay dirección de entrega');
+        }
+
+        const body: IOrder = {
+            orderItems: state.cart.map(p => ({
+                ...p,
+                size: p.size!
+            }) ),
+            shippingAddress: state.shippingAddress,
+            numberOfItems: state.numberOfItems,
+            subTotal: state.subTotal,
+            tax: state.tax,
+            total: state.total,
+            isPaid: false
+        }
+
+        try {            
+            const {data} = await tesloApi.post('/orders', body);
+            
+            dispatch({type: '[Cart] - Order complete'});
+
+            return {
+                hasError: false,
+                message: data._id
+            }
+
+            
+        } catch(error){
+            
+            if (axios.isAxiosError(error)){
+                return {
+                    hasError: true,
+                    message: error.response?.data.message
+                }
+            }     
+            
+            return {
+                hasError: true,
+                message: 'Error al crear la orden, hable con el administrador'
+            }
+
+        }
+    }
+
     const updateAddress = ( address: ShippingAddress ) => {
         Cookie.set('firstName',address.firstName);
         Cookie.set('lastName',address.lastName);
@@ -148,6 +185,7 @@ export const CartProvider: FC<{children: React.ReactNode}> = ({children}) => {
                 updateCartQuantity,
                 removeCartProduct,
                 updateAddress,
+                createOrder,
             }}
         >
             {children}
