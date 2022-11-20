@@ -28,14 +28,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const session = await getSession({req: req});
 
     if(!session) {
-        return res.status(400).json({ message: 'No tiene permisos para usar este endpoint' });
+        return res.status(401).json({ message: 'No tiene permisos para usar este endpoint' });
     }
 
     const validRoles = ['admin','super-user','SEO'];
     const user : User = session.user as User;
     
     if(!validRoles.includes(user.role)){
-        return res.status(400).json({ message: 'No tiene permisos para usar este endpoint' });
+        return res.status(401).json({ message: 'No tiene permisos para usar este endpoint' });
     }
     
 
